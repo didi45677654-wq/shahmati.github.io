@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zevan Шахматы</title>
+<style>
+:root{--bg:#000;--sf:#0b0b0e;--sf2:#15151a;--bd:#25262d;--tx:#e8eaf0;--mt:#8d95a5;--ac:#7c9cff;--ac2:#a06bff;--ok:#5fd48a;--bad:#ff6b6b;--warn:#ffb454;--bl:#ebecd0;--bdk:#739552;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--sf);border-bottom:1px solid var(--bd)}
+.hin{max-width:1080px;margin:auto;padding:10px 16px 0;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;letter-spacing:.18em}
+.logo svg{width:34px;height:34px}.logo small{font-weight:500;font-size:12px;letter-spacing:.05em;color:var(--mt)}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mt);padding:12px 14px;font:600 15px inherit;font-family:inherit;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--tx)}nav button.on{color:var(--ac);border-color:var(--ac)}
+main{max-width:1080px;margin:auto;padding:16px}
+.hide{display:none!important}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:24px}
+.btn{border:0;border-radius:12px;padding:13px 20px;font:700 16px inherit;font-family:inherit;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--ac),var(--ac2));transition:.15s}
+.btn:hover{filter:brightness(1.12)}.btn.sec{background:var(--sf2);color:var(--tx);border:1px solid var(--bd)}
+.btn.red{background:#3a1f25;color:#ff9b9b;border:1px solid #5a2a33}
+select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:12px;font:inherit;font-size:15px}
+#menu{max-width:440px;margin:40px auto;text-align:center}#menu h2{margin:0 0 18px}#menu label{display:block;text-align:left;color:var(--mt);font-size:14px;margin-bottom:8px}#menu .btn{width:100%;margin-top:18px}
+#search{display:flex;flex-direction:column;align-items:center;margin-top:90px;text-align:center}
+.spin{width:46px;height:46px;border:4px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:sp 1s linear infinite;margin-bottom:20px}@keyframes sp{to{transform:rotate(360deg)}}
+#game{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.bcol{--bs:min(94vw,640px);width:var(--bs)}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;font-size:15px;color:var(--mt);font-weight:600;min-height:38px}
+#status{font-weight:700}
+#board{width:var(--bs);height:var(--bs);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:10px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.45);border:3px solid #25262d}
+.sq{display:flex;align-items:center;justify-content:center;font-size:calc(var(--bs)/8*.84);line-height:1;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none}
+.sq.l{background:var(--bl)}.sq.d{background:var(--bdk)}
+.sq.lm::after,.sq.sel::after{content:"";position:absolute;inset:0;background:rgba(255,235,60,.45)}
+.sq.sel::after{background:rgba(255,235,60,.6)}
+.sq.hint::after{content:"";position:absolute;inset:0;background:rgba(77,139,255,.5);box-shadow:inset 0 0 0 4px #4d8bff}
+.sq.mv::before{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(0,0,0,.25);z-index:2}
+.sq.cap::before{width:92%;height:92%;background:none;border:5px solid rgba(0,0,0,.25)}
+.sq.chk{background:radial-gradient(circle,#ff4d4d 0,#ff4d4d 35%,transparent 75%),var(--bl)}
+.pc{position:relative;z-index:1;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","Apple Symbols",serif}
+.pc.w{color:#fff;text-shadow:0 0 1px #000,0 0 2px #000,0 0 3px #000,0 2px 3px rgba(0,0,0,.6)}
+.pc.b{color:#16181d;text-shadow:0 1px 1px rgba(255,255,255,.3)}
+.under{display:flex;gap:8px;margin-top:10px}.under .btn{flex:1;padding:12px 6px;font-size:14px}
+#endbar{margin-top:10px;background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:14px;text-align:center}
+#endbar b{display:block;font-size:18px;margin-bottom:12px}#endbar .row{display:flex;gap:10px}#endbar .btn{flex:1}
+.hist{width:260px;max-width:100%;background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;height:min(94vw,640px);max-height:640px}
+.hist h4{margin:0;padding:12px;text-align:center;background:var(--sf2);font-size:14px}
+#hist{padding:10px;overflow-y:auto;font:14px ui-monospace,Menlo,monospace;flex:1}
+#hist div{display:flex;padding:4px 6px;border-radius:6px}#hist span:nth-child(1){width:34px;color:var(--mt)}#hist span:nth-child(2),#hist span:nth-child(3){width:70px;font-weight:700}
+@media(max-width:700px){.hist{height:200px;width:var(--bs,94vw)}}
+/* rules */
+.rules{max-width:860px;margin:auto}.rules h2{margin:0 0 6px;font-size:28px}.rules h3{margin:28px 0 10px;font-size:20px;color:var(--ac)}
+.rules p,.rules li{color:#c5cad6;line-height:1.65}
+.steps{counter-reset:s;list-style:none;padding:0}.steps li{counter-increment:s;padding:10px 12px 10px 52px;position:relative;background:var(--sf2);border-radius:12px;margin-bottom:8px}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:8px;width:28px;height:28px;border-radius:50%;background:var(--ac);color:#0b0d12;font-weight:800;display:flex;align-items:center;justify-content:center}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.pcard{background:var(--sf2);border:1px solid var(--bd);border-radius:14px;padding:14px;display:flex;gap:14px;align-items:center}
+.pcard b{font-size:17px}.pcard p{margin:4px 0 0;font-size:14px}
+.mini{display:grid;grid-template-columns:repeat(7,1fr);width:126px;height:126px;flex:none;border-radius:6px;overflow:hidden}
+.mini i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:15px;position:relative}
+.mini i:nth-child(odd){background:var(--bl)}.mini i:nth-child(even){background:var(--bdk)}
+.mini i.m::after{content:"";width:9px;height:9px;border-radius:50%;background:rgba(20,40,160,.65)}
+.mini i.x::after{content:"✕";color:#c0152a;font-weight:900;font-size:14px}
+.mini i.p{font-size:20px;color:#fff;text-shadow:0 0 2px #000,0 0 3px #000}
+.tip{background:var(--sf2);border-left:4px solid var(--ac);padding:12px 16px;border-radius:8px;margin:10px 0}
+.leg{display:flex;gap:16px;font-size:13px;color:var(--mt);margin:8px 0}
+/* chat */
+#chatwrap{max-width:860px;margin:auto;height:calc(100vh - 150px);min-height:460px;display:flex;flex-direction:column;padding:0;overflow:hidden}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--sf2);border-bottom:1px solid var(--bd)}
+.chead .who{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.12em}.chead svg{width:32px;height:32px}.chead small{display:block;font-weight:500;letter-spacing:0;color:var(--ok);font-size:12px}
+.vc{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;border:1px solid var(--bd)}
+.vc button{background:none;border:0;color:var(--mt);padding:6px 10px;border-radius:7px;cursor:pointer;font:inherit;font-size:13px}.vc button.on{background:var(--ac);color:#0b0d12;font-weight:700}
+#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.m{max-width:82%;padding:11px 14px;border-radius:16px;line-height:1.55;font-size:15px;white-space:pre-wrap;word-wrap:break-word}
+.m.ai{background:var(--sf2);border:1px solid var(--bd);border-top-left-radius:4px;align-self:flex-start}
+.m.me{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-top-right-radius:4px;align-self:flex-end}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 8px}.chips button{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;cursor:pointer}.chips button:hover{border-color:var(--ac)}
+.inp{display:flex;gap:10px;align-items:flex-end;padding:12px;border-top:1px solid var(--bd);background:var(--sf2)}
+#mic{width:50px;height:50px;border-radius:50%;border:0;background:var(--sf);color:var(--tx);border:1px solid var(--bd);cursor:pointer;font-size:22px;flex:none}
+#mic.on{background:var(--bad);color:#fff;animation:pu 1.1s infinite}@keyframes pu{50%{box-shadow:0 0 0 10px rgba(255,107,107,.2)}}
+#ci{flex:1;resize:none;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:14px;padding:13px 14px;font:inherit;font-size:15px;max-height:120px}
+#ci:focus,select:focus{outline:2px solid var(--ac);outline-offset:0}
+#send{width:50px;height:50px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-size:20px;cursor:pointer;flex:none}
+#vo{position:fixed;inset:0;z-index:50;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:20px;text-align:center}
+.orb{width:min(60vw,230px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#a8c0ff 25%,#7c5cff 60%,#2a1a6e);box-shadow:0 0 80px rgba(124,92,255,.55);cursor:pointer;transition:box-shadow .3s}
+#vo[data-s=l] .orb{animation:ob 1.2s ease-in-out infinite;box-shadow:0 0 110px rgba(95,212,138,.65)}
+#vo[data-s=t] .orb{animation:rt 1.6s linear infinite;filter:hue-rotate(70deg)}
+#vo[data-s=s] .orb{animation:ob .7s ease-in-out infinite}
+@keyframes ob{50%{transform:scale(1.14)}}@keyframes rt{to{transform:rotate(360deg) scale(.95)}}
+#vt{font-size:22px;font-weight:700}#vsub{color:var(--mt);max-width:600px;min-height:48px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="hin">
+<div class="logo"><svg viewBox="0 0 40 40"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c9cff"/><stop offset="1" stop-color="#a06bff"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M11 12h18L12 28h17" stroke="#fff" stroke-width="4.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg><div>ZEVAN<br><small>Шахматы</small></div></div>
+<nav><button id="t-play" class="on">♟ Играть</button><button id="t-rules">📖 Как играть</button><button id="t-ai">✦ Zevan AI</button></nav>
+</div></header>
+<main>
+<section id="c-play">
+ <div id="menu" class="card">
+  <h2>Новая партия</h2>
+  <label for="diff">Сложность соперника</label>
+  <select id="diff"><option value="1">Лёгкое — случайные ходы</option><option value="2" selected>Нормальное — берёт фигуры</option><option value="3">Сложное — думает на 1 ход</option><option value="4">Экстремальное — думает на 2 хода</option><option value="5">Мастер — Zevan Engine (3 хода)</option></select>
+  <button class="btn" id="go">🔍 Начать поиск</button>
+ </div>
+ <div id="search" class="hide"><div class="spin"></div><h3>Ищем достойного противника…</h3><p style="color:var(--mt)">Подбор по рейтингу</p><button class="btn sec" id="cancel">Отмена</button></div>
+ <div id="game" class="hide">
+  <div class="bcol">
+   <div class="bar"><span>🤖 Бот (<span id="dl">Нормальное</span>)</span><span id="status">Ваш ход</span></div>
+   <div style="height:8px;border-radius:6px;background:#000;border:1px solid var(--bd);overflow:hidden;margin-bottom:6px" title="Оценка позиции"><div id="evw" style="height:100%;width:50%;background:#f2f2f2;transition:width .4s"></div></div><div id="board"></div>
+   <div class="bar"><span>👤 Вы (белые)</span></div>
+   <div class="under" id="under"><button class="btn sec" id="hint">💡 Подсказка</button><button class="btn sec" id="undo">↩ Отмена</button><button class="btn red" id="resign">🏳 Сдаться</button></div><div id="cmt" class="tip" style="margin-top:10px">♞ Zevan: удачной партии!</div>
+   <div id="endbar" class="hide"><b id="endmsg"></b><div class="row"><button class="btn" id="again">🔍 Начать поиск</button><button class="btn sec" id="tomenu">В меню</button></div></div>
+  </div>
+  <div class="hist"><h4>История ходов</h4><div id="hist"></div></div>
+ </div>
+</section>
+
+<section id="c-rules" class="hide"><div class="card rules">
+ <h2>Как играть в шахматы</h2>
+ <p>Шахматы — игра для двоих на доске 8×8. У каждого 16 фигур. Белые ходят первыми, дальше ходы чередуются. <b>Цель — поставить мат</b>: атаковать короля соперника так, чтобы спасти его было нечем.</p>
+ <h3>Как сделать ход здесь</h3>
+ <ol class="steps"><li>Вы играете белыми — они снизу. Нажмите на свою фигуру.</li><li>Точки покажут, куда она может пойти. Кольцо — это фигура, которую можно побить.</li><li>Нажмите на нужную клетку — ход сделан. Затем ответит бот.</li><li>Если ваш король под атакой (шах), он подсветится красным. Нужно сразу его защитить.</li></ol>
+ <h3>Как ходят фигуры</h3>
+ <div class="leg"><span>🔵 — куда можно идти</span><span style="color:#c0152a">✕ — только бить</span></div>
+ <div class="pgrid" id="pg"></div>
+ <h3>Особые правила</h3>
+ <div class="tip"><b>Рокировка.</b> Король сдвигается на 2 клетки к ладье, ладья встаёт рядом с ним с другой стороны. Нельзя, если король или эта ладья уже ходили, между ними есть фигуры, или король под шахом. Чтобы сделать её здесь, нажмите на короля и на клетку через одну.</div>
+ <div class="tip"><b>Взятие на проходе.</b> Если пешка соперника прошла две клетки и встала рядом с вашей пешкой, вы можете побить её сразу следующим ходом, как будто она сделала один шаг.</div>
+ <div class="tip"><b>Превращение.</b> Пешка, дошедшая до последней горизонтали, становится другой фигурой. В этой игре — всегда ферзём.</div>
+ <h3>Чем заканчивается партия</h3>
+ <ul><li><b>Шах</b> — королю угрожают. Его нужно спасти: уйти, закрыться или побить атакующего.</li><li><b>Мат</b> — шах, от которого нельзя защититься. Игра окончена, победил тот, кто поставил мат.</li><li><b>Пат и ничья</b> — ходить нечем, но шаха нет; троекратное повторение позиции; слишком мало фигур для мата.</li></ul>
+ <h3>Первые советы</h3>
+ <ul><li>Захватывайте центр пешками (e4, d4).</li><li>Развивайте коней и слонов, потом делайте рокировку.</li><li>Не выводите ферзя слишком рано.</li><li>Перед каждым ходом проверяйте: что угрожает вам и что вы оставляете без защиты.</li><li>Ценность: пешка 1, конь и слон 3, ладья 5, ферзь 9.</li></ul>
+ <p>Что-то непонятно? Спросите Zevan во вкладке «Zevan AI».</p>
+</div></section>
+
+<section id="c-ai" class="hide"><div class="card" id="chatwrap">
+ <div class="chead"><div class="who"><svg viewBox="0 0 40 40"><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M11 12h18L12 28h17" stroke="#fff" stroke-width="4.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg><div>ZEVAN<small>● онлайн, шахматный помощник</small></div></div>
+ <button class="btn" id="vmb" style="padding:8px 14px;font-size:14px">🎧 Голосовой режим</button><div class="vc" title="Голос"><button id="v-f">Женский</button><button id="v-m" class="on">Мужской</button><button id="v-d">Обычный</button><button id="v-x">🔇</button></div><select id="vsel" class="hide" title="Голос" style="width:auto;max-width:190px;padding:7px 8px;font-size:13px"><option value="">Авто</option></select></div>
+ <div id="msgs"></div>
+ <div class="chips"><button>Какой мой лучший ход?</button><button>Матерись по-лёгкому 😈</button><button>Оцени позицию</button><button>Объясни рокировку</button><button>Дай совет по дебюту</button></div>
+ <div class="inp"><button id="mic" title="Голосовой ввод">🎤</button><textarea id="ci" rows="1" placeholder="Спросите Zevan…"></textarea><button id="send" title="Отправить">➤</button></div>
+</div></section>
+</main>
+
+<div id="vo" class="hide" data-s="i"><div class="orb" id="orb"></div><div id="vt">Нажмите на шар</div><div id="vsub"></div><button class="btn red" id="vend">✕ Завершить</button></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+/* ---------- tabs ---------- */
+const tabs=[['t-play','c-play'],['t-rules','c-rules'],['t-ai','c-ai']];
+tabs.forEach(([t,c])=>$(t).onclick=()=>{tabs.forEach(([a,b])=>{$(a).classList.toggle('on',a===t);$(b).classList.toggle('hide',b!==c)});if(c==='c-ai')$('ci').focus()});
+
+/* ---------- chess ---------- */
+const game=new Chess();
+const G={p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'};
+const VAL={p:10,n:30,b:30,r:50,q:90,k:900};
+const NMn={p:'пешка',n:'конь',b:'слон',r:'ладья',q:'ферзь'};
+const LV=['','Лёгкое','Нормальное','Сложное','Экстремальное','Мастер'];
+let sel=null,lvl=2,myTurn=false,over=false,last=[],searchT=null,resignT=null,hintSq=[];
+
+function show(id){['menu','search','game'].forEach(x=>$(x).classList.toggle('hide',x!==id))}
+function startSearch(){
+  lvl=+$('diff').value;show('search');
+  searchT=setTimeout(startGame,600+Math.random()*600);
+}
+$('go').onclick=startSearch;
+$('cancel').onclick=()=>{clearTimeout(searchT);show('menu')};
+$('again').onclick=startSearch;
+$('tomenu').onclick=()=>show('menu');
+
+function startGame(){
+  game.reset();over=false;myTurn=true;sel=null;last=[];hintSq=[];$('cmt').textContent='♞ Zevan: удачной партии! Нажмите 💡, если нужна подсказка.';
+  $('dl').textContent=LV[lvl];
+  $('endbar').classList.add('hide');$('under').classList.remove('hide');
+  resetResign();show('game');render();
+}
+function resetResign(){clearTimeout(resignT);$('resign').textContent='🏳 Сдаться'}
+$('resign').onclick=()=>{
+  if($('resign').dataset.arm==='1'){$('resign').dataset.arm='0';resetResign();finish('Вы сдались. Победил бот.');return}
+  $('resign').dataset.arm='1';$('resign').textContent='Точно сдаться? Нажмите ещё раз';
+  resignT=setTimeout(()=>{$('resign').dataset.arm='0';resetResign()},3500);
+};
+function render(){
+  const b=$('board');b.innerHTML='';
+  const bd=game.board();
+  const legal=sel?game.moves({square:sel,verbose:true}):[];
+  const tos=new Map(legal.map(m=>[m.to,m]));
+  let kingChk=null;
+  if(game.in_check()){const t=game.turn();bd.forEach((r,i)=>r.forEach((p,j)=>{if(p&&p.type==='k'&&p.color===t)kingChk=String.fromCharCode(97+j)+(8-i)}))}
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+    const id=String.fromCharCode(97+f)+(8-r),p=bd[r][f];
+    const d=document.createElement('div');d.className='sq '+((r+f)%2?'d':'l');
+    if(last.includes(id))d.classList.add('lm');
+    if(hintSq.includes(id))d.classList.add('hint');
+    if(id===sel)d.classList.add('sel');
+    if(id===kingChk)d.classList.add('chk');
+    if(tos.has(id)){d.classList.add('mv');if(p)d.classList.add('cap')}
+    if(p){const s=document.createElement('span');s.className='pc '+p.color;s.textContent=G[p.type]+'\uFE0E';d.appendChild(s)}
+    d.onclick=()=>click(id);b.appendChild(d);
+  }
+  hist();status();$('evw').style.width=(50+50*Math.tanh(evalB(game)/60))+'%';
+}
+function click(id){
+  if(!myTurn||over)return;hintSq=[];
+  const p=game.get(id);
+  if(sel){
+    const m=game.moves({square:sel,verbose:true}).find(x=>x.to===id);
+    if(m){return play(m)}
+    if(p&&p.color==='w'){sel=id;return render()}
+    sel=null;return render();
+  }
+  if(p&&p.color==='w'){sel=id;render()}
+}
+function play(m){
+  game.move({from:m.from,to:m.to,promotion:'q'});
+  $('cmt').textContent=m.captured?'♞ Zevan: вы побили — '+NMn[m.captured]+'!':'♞ Zevan: …бот думает.';
+  last=[m.from,m.to];sel=null;myTurn=false;render();
+  if(!check())setTimeout(bot,450);
+}
+function check(){
+  if(game.in_checkmate()){finish('Мат! Победили '+(game.turn()==='w'?'чёрные (бот).':'белые — вы!'));return true}
+  if(game.game_over()){finish('Ничья!');return true}
+  return false;
+}
+function status(){
+  const s=$('status');if(over)return;
+  s.textContent=(game.turn()==='w'?'Ваш ход':'Бот думает…')+(game.in_check()?' · шах!':'');
+  s.style.color=game.turn()==='w'?'var(--ok)':'var(--warn)';
+}
+function finish(msg){
+  over=true;myTurn=false;sel=null;
+  $('status').textContent='Партия окончена';$('status').style.color='var(--bad)';
+  $('endmsg').textContent=msg;$('endbar').classList.remove('hide');$('under').classList.add('hide');
+  render();
+}
+function hist(){
+  const h=game.history(),el=$('hist');el.innerHTML='';
+  for(let i=0;i<h.length;i+=2){
+    const d=document.createElement('div');
+    d.innerHTML=`<span>${i/2+1}.</span><span>${h[i]}</span><span style="color:var(--ac)">${h[i+1]||''}</span>`;el.appendChild(d);
+  }
+  el.scrollTop=el.scrollHeight;
+}
+/* bot */
+function evalB(g){
+  let t=0;g.board().forEach((r,i)=>r.forEach((p,j)=>{if(!p)return;
+    const c=3.5-Math.abs(3.5-j),w=3.5-Math.abs(3.5-i);
+    const v=VAL[p.type]+(p.type==='k'?0:(c+w)*.4);
+    t+=p.color==='w'?v:-v}));
+  return t;
+}
+function mm(g,d,a,b,max){
+  if(d===0||g.game_over()){if(g.in_checkmate())return max?-9999:9999;return g.game_over()?0:evalB(g)}
+  const ms=g.moves().sort((a,b)=>(b.includes('x')|0)-(a.includes('x')|0));
+  if(max){let v=-Infinity;for(const m of ms){g.move(m);v=Math.max(v,mm(g,d-1,a,b,false));g.undo();a=Math.max(a,v);if(b<=a)break}return v}
+  let v=Infinity;for(const m of ms){g.move(m);v=Math.min(v,mm(g,d-1,a,b,true));g.undo();b=Math.min(b,v);if(b<=a)break}return v;
+}
+function bot(){
+  if(over)return;
+  const ms=game.moves({verbose:true});let pick;
+  if(lvl===1)pick=ms[Math.floor(Math.random()*ms.length)];
+  else if(lvl===2){
+    pick=ms[Math.floor(Math.random()*ms.length)];let best=0;
+    ms.forEach(m=>{if(m.captured&&VAL[m.captured]>best){best=VAL[m.captured];pick=m}});
+  }else{
+    const depth=lvl===5?3:lvl===4?2:1;let bs=Infinity,bm=[];
+    ms.forEach(m=>{game.move(m);const s=mm(game,depth-1,-Infinity,Infinity,true);game.undo();
+      if(s<bs){bs=s;bm=[m]}else if(s===bs)bm.push(m)});
+    pick=bm[Math.floor(Math.random()*bm.length)]||ms[0];
+  }
+  game.move(pick);last=[pick.from,pick.to];myTurn=true;
+  $('cmt').textContent=pick.captured?'♞ Zevan: бот побил — '+NMn[pick.captured]+'. Проверьте защиту!':(game.in_check()?'♞ Zevan: вам шах!':'♞ Zevan: ваш ход.');render();check();
+}
+
+/* ---------- rules mini boards ---------- */
+(function(){
+  const dirs={r:[[1,0],[-1,0],[0,1],[0,-1]],b:[[1,1],[1,-1],[-1,1],[-1,-1]]};
+  dirs.q=dirs.r.concat(dirs.b);
+  const info=[
+   ['k','Король','На 1 клетку в любую сторону. Самая важная фигура: потеряли короля — проиграли.'],
+   ['q','Ферзь','Самая сильная: на любое число клеток по прямой или по диагонали.'],
+   ['r','Ладья','На любое число клеток по горизонтали или вертикали.'],
+   ['b','Слон','На любое число клеток по диагонали. Остаётся на клетках своего цвета.'],
+   ['n','Конь','«Буквой Г»: 2 клетки в одну сторону и 1 в сторону. Единственный, кто перепрыгивает через фигуры.'],
+   ['p','Пешка','Идёт вперёд на 1 клетку (с начальной позиции можно на 2), а бьёт по диагонали вперёд.']];
+  info.forEach(([t,name,txt])=>{
+    const n=7,pr=t==='p'?5:3,pc=3,mv=new Set(),cp=new Set();
+    const add=(r,c,s=mv)=>{if(r>=0&&r<n&&c>=0&&c<n)s.add(r*n+c)};
+    if(t==='k'){for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)if(a||b)add(pr+a,pc+b)}
+    else if(t==='n')[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]].forEach(([a,b])=>add(pr+a,pc+b));
+    else if(t==='p'){add(pr-1,pc);add(pr-2,pc);add(pr-1,pc-1,cp);add(pr-1,pc+1,cp)}
+    else dirs[t].forEach(([a,b])=>{for(let k=1;k<n;k++)add(pr+a*k,pc+b*k)});
+    let cells='';
+    for(let i=0;i<n*n;i++){const c=i===pr*n+pc?' p':mv.has(i)?' m':cp.has(i)?' x':'';
+      cells+=`<i class="${c.trim()}">${c===' p'?G[t]+'\uFE0E':''}</i>`}
+    const d=document.createElement('div');d.className='pcard';
+    d.innerHTML=`<div class="mini">${cells}</div><div><b>${name}</b><p>${txt}</p></div>`;$('pg').appendChild(d);
+  });
+})();
+
+/* ---------- Zevan chat ---------- */
+const msgs=$('msgs'),ci=$('ci');
+let chatHist=[],sample=null,dict=null,voiceType='m',muted=false,micOn=false,SR=null,rec=null,busy=false;
+function bubble(t,me){const d=document.createElement('div');d.className='m '+(me?'me':'ai');d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
+bubble('Привет! Я Zevan — твой шахматный помощник. Спрашивай про правила, дебюты и текущую партию: я вижу позицию на доске. Нажми 🎤 и просто говори — текст появится в чате и отправится сам.');
+
+function material(g){const v={p:1,n:3,b:3,r:5,q:9};let w=0,b=0;g.board().forEach(r=>r.forEach(p=>{if(p&&p.type!=='k')p.color==='w'?w+=v[p.type]:b+=v[p.type]}));return{w,b}}
+function bestMove(){
+  const g=new Chess(game.fen()),white=g.turn()==='w';let bs=white?-Infinity:Infinity,bm=null;
+  g.moves().forEach(m=>{g.move(m);const s=mm(g,2,-Infinity,Infinity,g.turn()==='w');g.undo();
+    if(white?s>bs:s<bs){bs=s;bm=m}});
+  return bm;
+}
+let vm=false,pend=0,T=0,spoken=0,spicy=false;
+function vmSet(s,t){$('vo').dataset.s=s;$('vt').textContent=t}
+function vmListen(){
+  if(!vm||busy||micOn)return;
+  ci.value='';vmSet('l','Слушаю…');
+  if(dict){micState(true);dict.start().catch(()=>{micState(false);vmSet('i','Нажмите на шар и говорите')})}
+  else if(SR)$('mic').onclick();
+  else vmSet('i','Голосовой ввод недоступен в этом браузере');
+}
+function vmStop(){if(window.speechSynthesis)speechSynthesis.cancel();pend=0;T++;if(micOn){if(dict)dict.stop();else if(rec)rec.stop()}}
+$('vmb').onclick=()=>{vm=true;$('vo').classList.remove('hide');$('vsub').textContent='';vmListen()};
+$('orb').onclick=()=>{if(micOn){vmStop();return}vmStop();vmListen()};
+$('vend').onclick=()=>{vm=false;vmStop();$('vo').classList.add('hide')};
+function streamSpeak(full,fin){
+  if(muted||!window.speechSynthesis)return;
+  const rest=full.slice(spoken);let end=0,m;
+  const re=spoken?/[.!?…]+(\s|$)/g:/[.!?…,;—]+\s/g;
+  while((m=re.exec(rest))){end=m.index+m[0].length;if(!spoken&&end>=18)break}
+  if(fin)end=rest.length;
+  if(end>0&&rest.slice(0,end).trim()){speak(rest.slice(0,end),spoken>0);spoken+=end}
+}
+function eng(q){
+  const m=material(game);let s=`материал: белые ${m.w}, чёрные ${m.b}`;
+  if(game.in_check())s+=', королю шах';
+  if(/ход|совет|подскаж|позици|оцен|лучш|делать|атак|защит|угроз/i.test(q)&&!game.game_over()){const b=bestMove();if(b)s+=`, лучший ход для ${game.turn()==='w'?'белых':'чёрных'}: ${b}`}
+  return s;
+}
+function showHint(){
+  if(!myTurn||over)return;const b=bestMove();if(!b)return;
+  const g=new Chess(game.fen()),mv=g.move(b);hintSq=[mv.from,mv.to];render();
+  $('cmt').textContent='♞ Zevan советует: '+b+' ('+mv.from+' → '+mv.to+')';
+}
+$('hint').onclick=showHint;
+$('undo').onclick=()=>{if(over||!myTurn||game.history().length<2)return;game.undo();game.undo();last=[];hintSq=[];sel=null;$('cmt').textContent='♞ Zevan: ход отменён, пробуйте ещё.';render()};
+function localCoach(q){
+  q=q.toLowerCase();const m=material(game);
+  if(/ход|совет|подскаж|лучш/.test(q)){
+    if(game.game_over()||!game.history().length&&false)return'Партия окончена.';
+    const b=bestMove();return b?`Сейчас ходят ${game.turn()==='w'?'белые':'чёрные'}. Я бы рекомендовал ${b}. Проверь, что после него фигуры остаются под защитой.`:'Ходов нет.';
+  }
+  if(/оцен|позици|кто.*(лучше|выигр)/.test(q)){
+    const d=m.w-m.b;return`Материал: белые ${m.w}, чёрные ${m.b}. ${d>0?'Белые впереди на '+d:d<0?'Чёрные впереди на '+-d:'Материально равно'}. Ходят ${game.turn()==='w'?'белые':'чёрные'}.`;
+  }
+  if(/рокиров/.test(q))return'Рокировка: король идёт на 2 клетки к ладье, ладья встаёт с другой стороны от него. Нельзя, если они уже ходили, между ними есть фигуры или король под шахом.';
+  if(/дебют|начал/.test(q))return'В дебюте займи центр пешками e4 или d4, выведи коней и слонов, сделай рокировку и не торопись с ферзём.';
+  return'Сейчас я работаю без подключения к Claude, поэтому отвечаю только на базовые вопросы: лучший ход, оценка позиции, рокировка, дебют.';
+}
+let VOICES=[];
+function loadV(){
+  if(!window.speechSynthesis)return;
+  VOICES=speechSynthesis.getVoices().filter(v=>/^ru/i.test(v.lang));
+  const s=$('vsel');
+  if(VOICES.length&&s.options.length===1){VOICES.forEach(v=>s.add(new Option(v.name.replace(/Microsoft |Google /,''),v.name)));s.classList.remove('hide')}
+}
+const FEM=/svetlana|dariya|milena|irina|katya|anna|tatyana|alena|yelena|elena|female|женск/i,MAL=/dmitry|dmitri|pavel|yuri|maxim|ostap|male|мужск/i;
+function pickVoice(){
+  const pref=VOICES.filter(v=>/online|natural|neural|premium|enhanced|siri/i.test(v.name)),pool=pref.concat(VOICES);
+  if(voiceType==='f')return pool.find(v=>FEM.test(v.name));
+  if(voiceType==='m')return pool.find(v=>MAL.test(v.name)&&!FEM.test(v.name));
+  return pool[0];
+}
+function speak(t,q){
+  if(muted||!window.speechSynthesis)return;
+  loadV();const s=speechSynthesis;if(!q){s.cancel();pend=0;T++}const tok=T;
+  const u=new SpeechSynthesisUtterance(t.replace(/[*#_`♞]/g,'').replace(/[\u{1F300}-\u{1FAFF}]/gu,'').slice(0,500));
+  u.lang='ru-RU';u.rate=1.0;
+  let v=pickVoice();const pv=$('vsel').value;if(pv)v=VOICES.find(x=>x.name===pv)||v;
+  if(v){u.voice=v;u.pitch=1}else{if(VOICES[0])u.voice=VOICES[0];u.pitch=voiceType==='f'?1.2:voiceType==='m'?.75:1}
+  pend++;if(vm)vmSet('s','Говорю… (нажмите, чтобы перебить)');
+  u.onend=u.onerror=()=>{if(tok!==T)return;pend=Math.max(0,pend-1);if(!pend&&vm&&!busy)setTimeout(vmListen,300)};
+  s.speak(u);
+}
+function speakOld(t){
+  if(muted||!window.speechSynthesis)return;
+  const s=speechSynthesis;s.cancel();
+  const u=new SpeechSynthesisUtterance(t.replace(/[*#_`]/g,'').slice(0,600));u.lang='ru-RU';
+  const vs=s.getVoices().filter(v=>/^ru/i.test(v.lang));
+  const fem=/milena|irina|anna|katya|svetlana|female|женск|google/i,mal=/pavel|yuri|maxim|male|мужск|dmitri/i;
+  let v=null;
+  if(voiceType==='f')v=vs.find(x=>fem.test(x.name)),u.pitch=1.25;
+  else if(voiceType==='m')v=vs.find(x=>mal.test(x.name)),u.pitch=v?1:.65;
+  if(!v)v=vs[0];if(v)u.voice=v;
+  u.rate=voiceType==='m'?.95:1;s.speak(u);
+}
+async function ask(text){
+  if(busy)return;busy=true;spoken=0;if(/не матер|без мата|не ругай|хватит ругат/i.test(text))spicy=false;else if(/матер|ругай|поругай|выражай|с матом/i.test(text))spicy=true;bubble(text,true);if(vm){vmSet('t','Думаю…');$('vsub').textContent='«'+text+'»'}
+  const out=bubble('Zevan думает…',false);let ans;
+  try{
+    if(!sample)throw{code:'none'};
+    const m=material(game);
+    const sys=`Ты — Zevan, парень 20 лет, шахматный тренер и кореш. Говоришь в мужском роде, просто и по-пацански, со сленгом («бро», «чел», «го», «ща», «жёстко», «зашёл»), безобидно подкалываешь за зевки в партии и иногда шутишь. ${spicy?'Игрок попросил материться, так что вставляй лёгкие ругательства: «блин», «чёрт», «нафиг», «капец», «нуб», «дерьмовый ход». Жёсткий мат и оскорбления личности, национальности и т.п. не используй; ругай игру и ходы, не игрока.':'Мат не используй, пока игрок не попросит.'} Иногда вставляй шахматный факт и эмодзи ♞. Отвечай по-русски, коротко (2-5 предложений), без таблиц и заголовков: ответ будет озвучен голосом. Если спрашивают про партию, опирайся на позицию. Не выдумывай ходы: используй только ходы, допустимые в этой позиции.
+Текущая позиция (FEN): ${game.fen()}. Ходят: ${game.turn()==='w'?'белые (игрок)':'чёрные (бот)'}. Партия (SAN): ${game.history().join(' ')||'ещё не начата'}. Материал: белые ${m.w}, чёрные ${m.b}. Сложность бота: ${LV[lvl]}. Ты не можешь искать в интернете. Данные шахматного движка: ${eng(text)}. Опирайся на них, не выдумывай ходы. Говори живо, как в разговоре, короткими фразами со вставками вроде «так», «смотри», «ну», без списков и markdown. Максимум 3 коротких предложения.`;
+    const input=[...chatHist.slice(-6),{role:'user',content:sys+'\n\nВопрос игрока: '+text}];
+    const r=await sample(input,{cache:false,modelTier:'quick',onText:({text:t})=>{if(t==='Thinking...')return;out.textContent=t;msgs.scrollTop=msgs.scrollHeight;streamSpeak(t)}});
+    ans=r.text;
+  }catch(e){ans=localCoach(text)}
+  out.textContent=ans;chatHist.push({role:'user',content:text},{role:'assistant',content:ans});
+  msgs.scrollTop=msgs.scrollHeight;streamSpeak(ans,true);busy=false;if(vm&&(muted||!window.speechSynthesis||!pend))setTimeout(vmListen,300);
+  if(/ход|подскаж|совет/i.test(text)&&myTurn&&!over&&!$('game').classList.contains('hide'))showHint();
+}
+function send(){const t=ci.value.trim();if(!t)return;ci.value='';ci.style.height='auto';ask(t)}
+$('send').onclick=send;
+ci.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}};
+ci.oninput=()=>{ci.style.height='auto';ci.style.height=Math.min(ci.scrollHeight,120)+'px'};
+document.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>ask(b.textContent));
+[['v-f','f'],['v-m','m'],['v-d','d']].forEach(([id,t])=>$(id).onclick=()=>{voiceType=t;muted=false;$('vsel').value='';['v-f','v-m','v-d'].forEach(x=>$(x).classList.toggle('on',x===id));$('v-x').classList.remove('on')});
+$('v-x').onclick=()=>{muted=!muted;$('v-x').classList.toggle('on',muted);if(muted)speechSynthesis.cancel()};
+
+/* voice input: auto-fill chat and auto-send */
+function micErr(e){const c=(e&&(e.code||e.message||e))+'';bubble(/not_granted|not-allowed|denied/.test(c)?'Нет доступа к микрофону. Разрешите его в браузере (значок замка в адресной строке) и нажмите 🎤 ещё раз.':'Микрофон не запустился ('+c+'). Попробуйте ещё раз или введите текст.',false)}
+function micState(on){micOn=on;$('mic').classList.toggle('on',on);ci.placeholder=on?'Слушаю…':'Спросите Zevan…'}
+SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('mic').onclick=()=>{
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  if(dict){
+    if(micOn){dict.stop();return}
+    ci.value='';micState(true);dict.start().catch(e=>{micState(false);micErr(e)});return;
+  }
+  if(SR){
+    if(micOn){rec.stop();return}
+    rec=new SR();rec.lang='ru-RU';rec.interimResults=true;rec.continuous=false;
+    rec.onstart=()=>micState(true);
+    rec.onresult=e=>{let t='';for(const r of e.results)t+=r[0].transcript;ci.value=t;if(e.results[e.results.length-1].isFinal)send()};
+    rec.onend=()=>micState(false);rec.onerror=e=>{micState(false);micErr(e.error||e)};
+    try{rec.start()}catch(e){micState(false)}return;
+  }
+  bubble('Голосовой ввод не поддерживается в этом браузере. Введите вопрос текстом.',false);
+};
+(async()=>{
+  try{
+    if(!(window.claude&&claude.use))return;
+    sample=await claude.use('sample');
+    dict=await claude.use('dictation');
+    if(dict){
+      let buf='',sil;
+      dict.onPartial(({text})=>{ci.value=(buf+' '+text).trim();clearTimeout(sil);sil=setTimeout(()=>{if(micOn&&ci.value.trim())dict.stop()},1100)});
+      dict.onFinal(({text})=>{buf=(buf+' '+text).trim();ci.value=buf;dict.stop()});
+      dict.onState(({state})=>{
+        if(state==='listening'){buf='';micState(true)}
+        else if(state==='idle'){const was=micOn;micState(false);buf='';if(was&&ci.value.trim())send()}
+      });
+    }
+  }catch(e){}
+})();
+if(window.speechSynthesis)(speechSynthesis.onvoiceschanged=loadV,loadV());
+</script>
+</body>
+</html>
